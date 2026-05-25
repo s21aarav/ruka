@@ -1,0 +1,24 @@
+[package]
+name = "ruka"
+version = "0.1.0"
+edition = "2021"
+description = "A high-performance append-only log and message broker"
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "fs", "macros", "sync", "signal"] }
+bytes = "1"
+tokio-util = { version = "0.7", features = ["codec"] }
+memmap2 = "0.9"
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+thiserror = "2"
+futures-sink = "0.3.32"
+tokio-stream = "0.1.18"
+futures = "0.3.32"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+nix = { version = "0.29", features = ["fs", "zerocopy"] }
+
+[dev-dependencies]
+tempfile = "3"
