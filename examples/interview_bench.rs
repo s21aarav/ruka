@@ -1,3 +1,4 @@
+#![allow(clippy::zombie_processes)]
 use clap::Parser;
 use futures::{SinkExt, StreamExt};
 use serde::Serialize;
@@ -72,10 +73,7 @@ fn start_broker(data_dir: &PathBuf, sync_mode: &str) -> std::io::Result<Child> {
         .status()?;
 
     if !status.success() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Failed to build broker",
-        ));
+        return Err(std::io::Error::other("Failed to build broker"));
     }
 
     println!(
