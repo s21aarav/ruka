@@ -14,7 +14,10 @@ use ruka::protocol::codec::RukaCodec;
 use ruka::protocol::request::{ProduceBatchRequest, ProduceRequest};
 
 #[derive(Parser, Debug)]
-#[command(name = "interview_bench", about = "Reproducible Ruka Benchmark Harness")]
+#[command(
+    name = "interview_bench",
+    about = "Reproducible Ruka Benchmark Harness"
+)]
 struct Args {
     #[arg(short, long, default_value = "127.0.0.1:9092")]
     broker: String,
@@ -67,12 +70,18 @@ fn start_broker(data_dir: &PathBuf, sync_mode: &str) -> std::io::Result<Child> {
     let status = Command::new("cargo")
         .args(["build", "--release", "--bin", "ruka"])
         .status()?;
-    
+
     if !status.success() {
-        return Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to build broker"));
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Failed to build broker",
+        ));
     }
 
-    println!("Starting broker with sync_mode = {} and data_dir = {:?}", sync_mode, data_dir);
+    println!(
+        "Starting broker with sync_mode = {} and data_dir = {:?}",
+        sync_mode, data_dir
+    );
     let child = Command::new("cargo")
         .args([
             "run",
@@ -95,8 +104,11 @@ fn start_broker(data_dir: &PathBuf, sync_mode: &str) -> std::io::Result<Child> {
 }
 
 async fn run_latency_bench(broker: &str, count: usize, size: usize) -> LatencyResult {
-    println!("\n[Latency] Running sequential latency test (size={}, count={})...", size, count);
-    
+    println!(
+        "\n[Latency] Running sequential latency test (size={}, count={})...",
+        size, count
+    );
+
     let stream = TcpStream::connect(broker).await.unwrap();
     stream.set_nodelay(true).unwrap();
     let mut client = Framed::new(stream, RukaCodec);
@@ -153,9 +165,18 @@ async fn run_latency_bench(broker: &str, count: usize, size: usize) -> LatencyRe
     }
 }
 
-async fn run_throughput_bench(broker: &str, msgs: usize, size: usize, batch: usize, pipeline: usize) -> ThroughputResult {
-    println!("\n[Throughput] Running pipelined throughput test (size={}, msgs={})...", size, msgs);
-    
+async fn run_throughput_bench(
+    broker: &str,
+    msgs: usize,
+    size: usize,
+    batch: usize,
+    pipeline: usize,
+) -> ThroughputResult {
+    println!(
+        "\n[Throughput] Running pipelined throughput test (size={}, msgs={})...",
+        size, msgs
+    );
+
     let stream = TcpStream::connect(broker).await.unwrap();
     stream.set_nodelay(true).unwrap();
     let mut client = Framed::new(stream, RukaCodec);
@@ -216,9 +237,10 @@ async fn run_throughput_bench(broker: &str, msgs: usize, size: usize, batch: usi
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    
+
     // Start Broker Process
-    let mut broker_process = start_broker(&args.data_dir, &args.sync_mode).expect("Broker failed to start");
+    let mut broker_process =
+        start_broker(&args.data_dir, &args.sync_mode).expect("Broker failed to start");
 
     let mut report = BenchmarkReport {
         sync_mode: args.sync_mode.clone(),
@@ -253,10 +275,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut f_csv = fs::File::create("ruka_bench_results.csv")?;
     writeln!(f_csv, "Workload,Size,Requests,Metrics")?;
     for l in &report.latency {
-        writeln!(f_csv, "{},{},{},Avg: {:.2}us | p99: {:.2}us", l.workload, l.payload_size, l.requests, l.avg_us, l.p99_us)?;
+        writeln!(
+            f_csv,
+            "{},{},{},Avg: {:.2}us | p99: {:.2}us",
+            l.workload, l.payload_size, l.requests, l.avg_us, l.p99_us
+        )?;
     }
     for t in &report.throughput {
-        writeln!(f_csv, "{},{},{},Throughput: {:.0} msgs/sec | Bandwidth: {:.2} MB/s", t.workload, t.payload_size, t.messages, t.msgs_per_sec, t.mb_per_sec)?;
+        writeln!(
+            f_csv,
+            "{},{},{},Throughput: {:.0} msgs/sec | Bandwidth: {:.2} MB/s",
+            t.workload, t.payload_size, t.messages, t.msgs_per_sec, t.mb_per_sec
+        )?;
     }
     println!("Saved CSV summary to ruka_bench_results.csv");
 
