@@ -1,0 +1,5 @@
+/target/
+/data/
+/ruka-data/
+*.log
+.DS_Store
